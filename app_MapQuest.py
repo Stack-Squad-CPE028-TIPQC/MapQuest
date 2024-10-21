@@ -28,6 +28,7 @@ def get_directions():
     json_status = json_data["info"]["statuscode"]
 
     if json_status == 0:
+        directions_text.config(state=tk.NORMAL)
         directions_text.delete(1.0, tk.END)
         directions_text.insert(tk.END, f"Directions from {orig} to {dest}\n")
         directions_text.insert(tk.END, f"Trip Duration: {json_data['route']['formattedTime']}\n")
@@ -51,6 +52,7 @@ def get_directions():
         # Add link to open in MapQuest
         map_link = f"https://www.mapquest.com/directions/from/{orig.replace(' ', '+')}/to/{dest.replace(' ', '+')}"
         directions_text.insert(tk.END, f"\nOpen this route in MapQuest: {map_link}\n")
+        directions_text.config(state=tk.DISABLED)
         open_map_button.config(state=tk.NORMAL)
         open_map_button.map_link = map_link
     elif json_status == 402:
@@ -66,8 +68,17 @@ def open_map():
 # Create the main window
 root = tk.Tk()
 root.title("STACK SQUAD - MapQuest Directions App")
-root.geometry("800x1000")
+root.geometry("900x1000")
 root.configure(bg="#F8F8F8")  # Light grey background for a modern look
+root.grid_rowconfigure(0, weight=1)
+root.grid_columnconfigure(0, weight=1)
+
+# Create a frame to center the content
+main_frame = tk.Frame(root, bg="#F8F8F8")
+main_frame.grid(row=0, column=0, sticky="nsew")
+main_frame.grid_rowconfigure(6, weight=1)
+main_frame.grid_columnconfigure(0, weight=1)
+main_frame.grid_columnconfigure(1, weight=1)
 
 # Load and resize the logo
 try:
@@ -83,10 +94,10 @@ try:
     if scaling_factor > 1:
         logo = logo.subsample(int(scaling_factor))
 
-    logo_label = tk.Label(root, image=logo, bg="#F8F8F8")
+    logo_label = tk.Label(main_frame, image=logo, bg="#F8F8F8")
     logo_label.grid(row=0, column=0, columnspan=2, pady=10)
 except tk.TclError:
-    logo_label = tk.Label(root, text="STACK SQUAD", font=("Arial", 24, "bold"), bg="#F8F8F8", fg="#4B0082")
+    logo_label = tk.Label(main_frame, text="STACK SQUAD", font=("Arial", 24, "bold"), bg="#F8F8F8", fg="#4B0082")
     logo_label.grid(row=0, column=0, columnspan=2, pady=10)
 
 # Style configuration
@@ -97,41 +108,41 @@ style.configure("TButton", background="#FF6F00", foreground="white", font=("Aria
 style.configure("TCombobox", font=("Arial", 12))
 
 # Labels and entries for Starting Location and Destination
-label_start = ttk.Label(root, text="Starting Location:")
+label_start = ttk.Label(main_frame, text="Starting Location:")
 label_start.grid(row=1, column=0, padx=10, pady=10, sticky=tk.E)
-entry_start = ttk.Entry(root, width=40)
+entry_start = ttk.Entry(main_frame, width=40)
 entry_start.grid(row=1, column=1, padx=10, pady=10)
 
-label_dest = ttk.Label(root, text="Destination:")
+label_dest = ttk.Label(main_frame, text="Destination:")
 label_dest.grid(row=2, column=0, padx=10, pady=10, sticky=tk.E)
-entry_dest = ttk.Entry(root, width=40)
+entry_dest = ttk.Entry(main_frame, width=40)
 entry_dest.grid(row=2, column=1, padx=10, pady=10)
 
 # Dropdown for unit selection
-label_unit = ttk.Label(root, text="Preferred Unit:")
+label_unit = ttk.Label(main_frame, text="Preferred Unit:")
 label_unit.grid(row=3, column=0, padx=10, pady=10, sticky=tk.E)
 unit_var = tk.StringVar(value="miles")
-unit_dropdown = ttk.Combobox(root, textvariable=unit_var, values=["miles", "kilometers"], state="readonly")
+unit_dropdown = ttk.Combobox(main_frame, textvariable=unit_var, values=["miles", "kilometers"], state="readonly")
 unit_dropdown.grid(row=3, column=1, padx=10, pady=10)
 
 # Button to get directions
-button_get_directions = ttk.Button(root, text="Get Directions", command=get_directions)
+button_get_directions = ttk.Button(main_frame, text="Get Directions", command=get_directions)
 button_get_directions.grid(row=4, column=0, columnspan=2, pady=20)
 button_get_directions.configure(style="TButton")
 
 # Scrollable frame for directions
-scrollable_frame = tk.Frame(root, bg="#F8F8F8", bd=2, relief="groove")
+scrollable_frame = tk.Frame(main_frame, bg="#F8F8F8", bd=2, relief="groove")
 scrollable_frame.grid(row=5, column=0, columnspan=2, padx=20, pady=10, sticky="nsew")
 
 scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL)
-directions_text = tk.Text(scrollable_frame, wrap=tk.WORD, width=80, height=15, font=("Arial", 12), bg="#FFFFFF", fg="#4B0082", yscrollcommand=scrollbar.set, relief="flat")  # White background with purple text
+directions_text = tk.Text(scrollable_frame, wrap=tk.WORD, width=80, height=15, font=("Arial", 12), bg="#FFFFFF", fg="#4B0082", yscrollcommand=scrollbar.set, relief="flat", state=tk.DISABLED)  # White background with purple text, disabled by default
 scrollbar.config(command=directions_text.yview)
 scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 directions_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
 # Button to open map link
-open_map_button = ttk.Button(root, text="Open Map in Browser", command=open_map, state=tk.DISABLED)
-open_map_button.grid(row=7, column=0, columnspan=2, pady=20)
+open_map_button = ttk.Button(main_frame, text="Open Map in Browser", command=open_map, state=tk.DISABLED)
+open_map_button.grid(row=6, column=0, columnspan=2, pady=20)
 open_map_button.configure(style="TButton")
 
 # Start the main loop
